@@ -59,8 +59,7 @@ let rec run_ford_fulkerson graph flow_graph src tgt =
   let difference_graph = build_difference_graph graph flow_graph in
   let path : int list = find_path difference_graph src tgt in
   match path with
-  | [a] when a = src -> flow_graph
-  | [a; b] when a = src && b = tgt -> flow_graph
+  | [] -> flow_graph
   | _ ->
     Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
     let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
