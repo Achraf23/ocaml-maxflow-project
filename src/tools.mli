@@ -6,21 +6,14 @@ val gmap: 'a graph -> ('a -> 'b) -> 'b graph
 
 val add_arc: int graph -> id -> id -> int -> int graph
 
-(* try not to lose genericity *)
-val create_flow_graph: 'a graph -> int graph
-
-val create_flow_graph_2: 'a graph -> 'a graph
+val create_flow_graph: int graph -> int graph
 
 val update_flow_graph : int graph -> (int arc -> bool) -> (int arc -> bool) -> int -> int graph
-
-(* val update_flow_graph_2 : 'a graph -> ('a arc -> bool) -> ('a arc -> bool) -> 'a -> 'a graph *)
 
 val check_if_arc_is_in_path : int arc -> int list -> bool
 
 val check_if_backward_arc_is_in_path : int arc -> int list -> bool
 
 val find_max_flow_on_path : int graph -> int graph -> int list -> int option
-
-(*val while_loop : ('a -> bool) -> ('a -> unit) -> 'a -> unit*)
 
 

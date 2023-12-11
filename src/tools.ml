@@ -12,8 +12,6 @@ let add_arc graph id1 id2 n =
   | Some arc -> new_arc graph {src=arc.src; tgt=arc.tgt; lbl=arc.lbl+n}
 
 let create_flow_graph graph = gmap graph (fun _ -> 0)
-
-let create_flow_graph_2 graph = gmap (gmap graph (fun _ -> 0)) (fun n -> (n : 'a))
   
 let update_flow_graph : int graph -> (int arc -> bool) -> (int arc -> bool) -> int -> int graph =
   fun original_flow_graph condition backward_condition increment ->
@@ -33,27 +31,6 @@ let update_flow_graph : int graph -> (int arc -> bool) -> (int arc -> bool) -> i
         original_flow_graph
     in
     new_flow_graph
-
-(* let update_flow_graph_2 : 'a graph -> ('a arc -> bool) -> ('a arc -> bool) -> 'a -> 'a graph =
-  fun original_flow_graph condition backward_condition increment ->
-    let original_flow_graph_int = gmap original_flow_graph (fun arc -> { arc with lbl = (arc.lbl : int) }) in
-    let increment_int = fun value -> (value : int) in
-    let new_flow_graph =
-      e_fold
-      original_flow_graph_int
-        (fun acc_graph arc ->
-          let modified_arc =
-            if condition arc then
-              { arc with lbl = arc.lbl + increment_int }
-            else if backward_condition arc then
-              { arc with lbl = arc.lbl - increment_int }
-            else
-              arc
-          in
-          new_arc acc_graph modified_arc)
-          original_flow_graph_int
-    in
-    new_flow_graph *)
 
 let check_if_arc_is_in_path : int arc -> int list -> bool =
   fun arc path ->
@@ -110,12 +87,6 @@ let find_max_flow_on_path : int graph -> int graph -> int list -> int option =
     in
     find_max_flow_on_path path
 
-(*let rec while_loop condition action x =
-  if condition x then begin
-    action x;  (* Execute the action *)
-    while_loop condition action x  (* Recursive call for the next iteration *)
-  end else
-    ()*)
 
 
 
