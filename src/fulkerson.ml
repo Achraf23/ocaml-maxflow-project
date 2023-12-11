@@ -7,26 +7,31 @@ let successors n graph =
   List.map (fun arc -> arc.tgt) successors
 
 
-let rec find_path_aux graph idList src tgt =
-  if src = tgt then
-    [src]
-  else
-    let rec loop neighbors idList =
-      match neighbors with
-      | [] -> [] (*pas de chemin*)
-      | n1::rest ->
-        let path = (find_path_aux graph (n1::idList) n1 tgt) in
-        match path with
-        | [] -> loop rest (n1::idList)
-        | _ -> 
-          if List.mem n1 path then
-            path 
-          else n1::path in
-       loop (successors src graph) idList 
-
-let find_path graph src tgt =
-  Printf.printf "Starting to find path\n";
-  src::(find_path_aux graph [] src tgt)
+  let rec find_path_aux graph idList src tgt =
+    if src = tgt then
+      [src]
+    else
+      let rec loop neighbors idList =
+        match neighbors with
+        | [] -> [] (*pas de chemin*)
+        | n1::rest ->
+          let path = (find_path_aux graph (n1::idList) n1 tgt) in
+          match path with
+          | [] -> loop rest (n1::idList)
+          | _ -> 
+            if List.mem n1 path then
+              path 
+            else n1::path in
+         loop (successors src graph) idList 
+  
+  let find_path graph src tgt =
+    Printf.printf "Starting to find path\n";
+    src::(find_path_aux graph [] src tgt)
+  
+  let rec aff nodes =
+    match nodes with
+    | [] -> ()
+    | x::rest -> Printf.printf "%d " x ; aff rest 
 
 let rec aff nodes =
   match nodes with
@@ -59,7 +64,7 @@ let rec run_ford_fulkerson graph flow_graph src tgt =
   let difference_graph = build_difference_graph graph flow_graph in
   let path : int list = find_path difference_graph src tgt in
   match path with
-  | [0] -> flow_graph
+  | [_; _] -> flow_graph
   | _ ->
     Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
     let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
