@@ -38,6 +38,8 @@ let () =
 
   let flow_graph = run_ford_fulkerson graph flow_graph source target in
 
+  Printf.printf "Ford Fulkerson is done\n";
+
   let string_flow_graph = gmap flow_graph (fun x -> string_of_int x) in
 
   (* Rewrite the graph that has been read. *)
