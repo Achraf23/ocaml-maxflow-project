@@ -25,6 +25,7 @@ let rec find_path_aux graph idList src tgt =
        loop (successors src graph) idList 
 
 let find_path graph src tgt =
+  Printf.printf "Starting to find path\n";
   src::(find_path_aux graph [] src tgt)
 
 let rec aff nodes =
@@ -54,6 +55,7 @@ let build_difference_graph origin_graph flow_graph =
     build
 
 let rec run_ford_fulkerson graph flow_graph src tgt =
+  Printf.printf "Starting Ford Fulkerson iteration\n";
   let difference_graph = build_difference_graph graph flow_graph in
   let path : int list = find_path difference_graph src tgt in
   match path with
