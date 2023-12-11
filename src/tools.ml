@@ -14,10 +14,10 @@ let add_arc graph id1 id2 n =
 let create_flow_graph graph = gmap graph (fun _ -> 0)
   
 let update_flow_graph : int graph -> (int arc -> bool) -> (int arc -> bool) -> int -> int graph =
-  fun original_graph condition backward_condition increment ->
-    let new_graph =
+  fun original_flow_graph condition backward_condition increment ->
+    let new_flow_graph =
       e_fold
-        original_graph
+      original_flow_graph
         (fun acc_graph arc ->
           let modified_arc =
             if condition arc then
@@ -28,9 +28,9 @@ let update_flow_graph : int graph -> (int arc -> bool) -> (int arc -> bool) -> i
               arc
           in
           new_arc acc_graph modified_arc)
-        original_graph
+        original_flow_graph
     in
-    new_graph
+    new_flow_graph
 
 let check_if_arc_is_in_path : int arc -> int list -> bool =
   fun arc path ->
@@ -87,12 +87,6 @@ let find_max_flow_on_path : int graph -> int graph -> int list -> int option =
     in
     find_max_flow_on_path path
 
-(*let rec while_loop condition action x =
-  if condition x then begin
-    action x;  (* Execute the action *)
-    while_loop condition action x  (* Recursive call for the next iteration *)
-  end else
-    ()*)
 
 
 
