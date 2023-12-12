@@ -2,6 +2,11 @@ open Graph
 open Tools
 
 
+let rec aff nodes =
+  match nodes with
+  | [] -> ()
+  | x::rest -> Printf.printf "%d " x ; aff rest 
+
 let successors n graph = 
   let successors = out_arcs graph n in
   List.map (fun arc -> arc.tgt) successors
@@ -26,12 +31,10 @@ let rec find_path_aux graph idList src tgt =
 
 let find_path graph src tgt =
   Printf.printf "Starting to find path\n";
-  src::(find_path_aux graph [] src tgt)
+  let path = (find_path_aux graph [] src tgt) in
+  if path = [] then [] else src::path
 
-let rec aff nodes =
-  match nodes with
-  | [] -> ()
-  | x::rest -> Printf.printf "%d " x ; aff rest 
+
 
 let build_difference_graph origin_graph flow_graph = 
   let build = clone_nodes origin_graph in
@@ -50,24 +53,29 @@ let build_difference_graph origin_graph flow_graph =
         (*2 flow arcs if flow val < capacity and not equal to zero*)
         | _ -> let ajout = new_arc graph {src=arc.src; tgt=arc.tgt; lbl=diff} in
         new_arc ajout {src=arc.tgt; tgt=arc.src; lbl=arc_flow.lbl})
-    | None -> graph 
+    | None -> empty_graph 
     ) 
     build
+
+exception Difference_graph
 
 let rec run_ford_fulkerson graph flow_graph src tgt =
   Printf.printf "Starting Ford Fulkerson iteration\n";
   let difference_graph = build_difference_graph graph flow_graph in
-  let path : int list = find_path difference_graph src tgt in
-  match path with
-  | [a] when a = src -> flow_graph
-  | [a; b] when a = src && b = tgt -> flow_graph
-  | _ ->
-    Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
-    let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
-    let new_flow : int = Option.value new_flow_optional ~default:0 in
-    Printf.printf "Flow: %d\n" new_flow;
-    let updated_flow_graph = update_flow_graph flow_graph (fun arc -> check_if_arc_is_in_path arc path) (fun arc -> check_if_backward_arc_is_in_path arc path) new_flow in
-    run_ford_fulkerson graph updated_flow_graph src tgt
+  if difference_graph = empty_graph then
+    raise Difference_graph 
+  else
+    let path : int list = find_path difference_graph src tgt in
+    match path with
+    | [a] when a = src -> flow_graph
+    | [a; b] when a = src && b = tgt -> flow_graph
+    | _ ->
+      Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
+      let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
+      let new_flow : int = Option.value new_flow_optional ~default:0 in
+      Printf.printf "Flow: %d\n" new_flow;
+      let updated_flow_graph = update_flow_graph flow_graph (fun arc -> check_if_arc_is_in_path arc path) (fun arc -> check_if_backward_arc_is_in_path arc path) new_flow in
+      run_ford_fulkerson graph updated_flow_graph src tgt
 
   
 
