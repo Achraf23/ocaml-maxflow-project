@@ -20,33 +20,17 @@ let update_flow_graph original_flow_graph condition backward_condition increment
   e_fold
     original_flow_graph
     (fun acc_graph arc ->
-      Printf.printf "Processing arc: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl;
       let reverse_arc_opt = find_reverse_arc original_flow_graph arc in
       let modified_arc =
-        if condition arc then
-          begin
-            Printf.printf "Updating flow for condition\n";
-            { arc with lbl = arc.lbl + increment }
-          end
+        if condition arc then { arc with lbl = arc.lbl + increment }
         else if backward_condition arc then
           match reverse_arc_opt with
-          | Some reverse_arc when condition reverse_arc ->
-            Printf.printf "No update for this arc\n";
-            arc
-          | _ ->
-            begin
-              Printf.printf "Updating flow for backward_condition\n";
-              { arc with lbl = arc.lbl - increment }
-            end
-        else
-          begin
-            Printf.printf "No update for this arc\n";
-            arc
-          end
+          | Some reverse_arc when condition reverse_arc -> arc
+          | _ -> { arc with lbl = arc.lbl - increment }
+        else arc
       in
       new_arc acc_graph modified_arc)
     original_flow_graph
-
 
 let rec check_if_arc_is_in_path arc path =
   match path with
@@ -73,25 +57,12 @@ let rec find_max_flow_on_path graph flow_graph path =
   | [] -> None
   | _ :: [] -> None 
   | node1 :: node2 :: rest ->
-    (*(match find_arc graph node1 node2 with
-     | Some arc -> Printf.printf "Arc1: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl
-     | None -> Printf.printf "Arc1: None\n");
-    (match find_arc flow_graph node1 node2 with
-     | Some arc -> Printf.printf "Arc2: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl
-     | None -> Printf.printf "Arc2: None\n");
-    (match find_arc graph node2 node1 with
-     | Some arc -> Printf.printf "Arc1 rev: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl
-     | None -> Printf.printf "Arc1: None\n");
-    (match find_arc flow_graph node2 node1 with
-     | Some arc -> Printf.printf "Arc2 rev: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl
-     | None -> Printf.printf "Arc1: None\n");*)
     let arc1_opt = find_arc graph node1 node2 in
     let arc2_opt = find_arc flow_graph node1 node2 in
     let arc1_rev_opt = find_arc graph node2 node1 in
     let arc2_rev_opt = find_arc flow_graph node2 node1 in
     match (arc1_opt, arc2_opt, arc1_rev_opt, arc2_rev_opt) with
     | (Some arc1, Some arc2, None, None) ->
-      Printf.printf "Case 1 \n";
       let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
@@ -99,7 +70,6 @@ let rec find_max_flow_on_path graph flow_graph path =
         | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
       end
     | (None, None, Some _, Some arc2_rev) ->
-      Printf.printf "Case 2 \n";
       let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
@@ -107,7 +77,6 @@ let rec find_max_flow_on_path graph flow_graph path =
         | None -> Some (arc2_rev.lbl) (* we've reached the end *)
       end
     | (Some arc1, Some arc2, Some _, Some _) ->
-      Printf.printf "Case 3 \n";
       let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
