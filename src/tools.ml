@@ -14,19 +14,23 @@ let add_arc graph id1 id2 n =
 let create_flow_graph graph = gmap graph (fun _ -> 0)
   
 let update_flow_graph original_flow_graph condition backward_condition increment =
+  let find_reverse_arc graph arc =
+    find_arc graph arc.tgt arc.src
+  in
   e_fold
     original_flow_graph
     (fun acc_graph arc ->
+      let reverse_arc_opt = find_reverse_arc original_flow_graph arc in
       let modified_arc =
-        if condition arc then
-          { arc with lbl = arc.lbl + increment }
+        if condition arc then { arc with lbl = arc.lbl + increment }
         else if backward_condition arc then
-          { arc with lbl = arc.lbl - increment }
-        else
-          arc
+          match reverse_arc_opt with
+          | Some reverse_arc when condition reverse_arc -> arc
+          | _ -> { arc with lbl = arc.lbl - increment }
+        else arc
       in
       new_arc acc_graph modified_arc)
-    original_flow_graph   (* 'b in e_fold is int graph *)
+    original_flow_graph
 
 let rec check_if_arc_is_in_path arc path =
   match path with
@@ -72,7 +76,17 @@ let rec find_max_flow_on_path graph flow_graph path =
         | Some rest_difference -> Some (min (arc2_rev.lbl) rest_difference)
         | None -> Some (arc2_rev.lbl) (* we've reached the end *)
       end
+    | (Some arc1, Some arc2, Some _, Some _) ->
+      let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
+      begin
+        match rest_difference_opt with
+        | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
+        | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
+      end
     | _ -> None
+
+  
+
 
 
 

@@ -57,4 +57,3 @@ let () =
   let () = write_file outfile string_flow_graph in
 
   ()
-
