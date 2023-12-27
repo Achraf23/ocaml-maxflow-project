@@ -61,7 +61,7 @@ let build_difference_graph origin_graph flow_graph =
 exception Difference_graph_error
 
 let rec run_ford_fulkerson graph flow_graph src tgt =
-  Printf.printf "Starting Ford Fulkerson iteration\n";
+  Printf.printf "Starting Ford Fulkerson iteration\n"; 
   let difference_graph = build_difference_graph graph flow_graph in
   if difference_graph = empty_graph then
     raise Difference_graph_error
