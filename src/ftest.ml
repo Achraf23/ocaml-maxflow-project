@@ -35,8 +35,6 @@ let () =
   let string_graph = from_file infile in
   let graph = gmap string_graph (fun x -> int_of_string x) in
 
-  
-
   if not (node_exists graph source) then begin
     Printf.printf "Error: Source node %d does not exist in the graph.\n" source;
     exit 1;
