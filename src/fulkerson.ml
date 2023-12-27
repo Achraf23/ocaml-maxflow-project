@@ -11,37 +11,32 @@ let successors n graph =
   let successors = out_arcs graph n in
   List.map (fun arc -> arc.tgt) successors
 
-
-  let rec find_path_aux graph idList src tgt =
-    if src = tgt then
-      [src]
-    else
-      let neighbors = successors src graph in
-      let rec loop rest =
-        match rest with
-        | [] -> [] (* pas de chemin *)
-        | n1 :: rest' ->
-          if List.mem n1 idList then
-            loop rest'
-          else
-            let path = find_path_aux graph (n1 :: idList) n1 tgt in
-            Printf.printf "%d : idList= " src; aff idList ;
-            Printf.printf "\n";
-            match path with
-            | [] -> loop rest'
-            | _ ->
-              src :: path
-        in
-        loop neighbors
-  
+let rec find_path_aux graph idList src tgt =
+  if src = tgt then
+    [src]
+  else
+    let neighbors = successors src graph in
+    let rec loop rest =
+      match rest with
+      | [] -> [] (* pas de chemin *)
+      | n1 :: rest' ->
+        if List.mem n1 idList then
+          loop rest'
+        else
+          let path = find_path_aux graph (n1 :: idList) n1 tgt in
+          Printf.printf "%d : idList= " src; aff idList ;
+          Printf.printf "\n";
+          match path with
+          | [] -> loop rest'
+          | _ ->
+            src :: path
+      in
+      loop neighbors
   
 let find_path graph src tgt =
   Printf.printf "Starting to find path\n";
   find_path_aux graph [src] src tgt 
   
-
-
-
 let build_difference_graph origin_graph flow_graph = 
   let build = clone_nodes origin_graph in
   e_fold origin_graph 
