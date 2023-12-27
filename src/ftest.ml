@@ -1,6 +1,7 @@
 open Gfile
 open Tools
 open Fulkerson
+open Graph
     
 let () =
 
@@ -33,6 +34,18 @@ let () =
   (* Open file *)
   let string_graph = from_file infile in
   let graph = gmap string_graph (fun x -> int_of_string x) in
+
+  
+
+  if not (node_exists graph source) then begin
+    Printf.printf "Error: Source node %d does not exist in the graph.\n" source;
+    exit 1;
+  end;
+
+  if not (node_exists graph target) then begin
+    Printf.printf "Error: Target node %d does not exist in the graph.\n" target;
+    exit 1;
+  end;
 
   let flow_graph = create_flow_graph graph in
 
