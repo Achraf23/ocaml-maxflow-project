@@ -1,6 +1,6 @@
 open Graph
 open Tools
-
+open Gfile
 
 let rec aff nodes =
   match nodes with
@@ -12,27 +12,33 @@ let successors n graph =
   List.map (fun arc -> arc.tgt) successors
 
 
-let rec find_path_aux graph idList src tgt =
-  if src = tgt then
-    [src]
-  else
-    let rec loop neighbors idList =
-      match neighbors with
-      | [] -> [] (*pas de chemin*)
-      | n1::rest ->
-        let path = (find_path_aux graph (n1::idList) n1 tgt) in
-        match path with
-        | [] -> loop rest (n1::idList)
-        | _ -> 
-          if List.mem n1 path then
-            path 
-          else n1::path in
-        loop (successors src graph) idList 
-
+  let rec find_path_aux graph idList src tgt =
+    if src = tgt then
+      [src]
+    else
+      let neighbors = successors src graph in
+      let rec loop rest =
+        match rest with
+        | [] -> [] (* pas de chemin *)
+        | n1 :: rest' ->
+          if List.mem n1 idList then
+            loop rest'
+          else
+            let path = find_path_aux graph (n1 :: idList) n1 tgt in
+            Printf.printf "%d : idList= " src; aff idList ;
+            Printf.printf "\n";
+            match path with
+            | [] -> loop rest'
+            | _ ->
+              src :: path
+        in
+        loop neighbors
+  
+  
 let find_path graph src tgt =
   Printf.printf "Starting to find path\n";
-  let path = (find_path_aux graph [] src tgt) in
-  if path = [] then [] else src::path
+  find_path_aux graph [src] src tgt 
+  
 
 
 
@@ -57,14 +63,15 @@ let build_difference_graph origin_graph flow_graph =
     ) 
     build
 
-exception Difference_graph
+exception Difference_graph_error
 
 let rec run_ford_fulkerson graph flow_graph src tgt =
   Printf.printf "Starting Ford Fulkerson iteration\n";
   let difference_graph = build_difference_graph graph flow_graph in
   if difference_graph = empty_graph then
-    raise Difference_graph 
+    raise Difference_graph_error
   else
+    write_file "outfileTest" (gmap difference_graph string_of_int);
     let path : int list = find_path difference_graph src tgt in
     match path with
     | [] -> flow_graph
