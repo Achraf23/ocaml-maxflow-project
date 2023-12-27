@@ -1,5 +1,4 @@
 open Graph
-open Gfile
 
 let clone_nodes gr = n_fold gr new_node empty_graph
 
@@ -15,19 +14,39 @@ let add_arc graph id1 id2 n =
 let create_flow_graph graph = gmap graph (fun _ -> 0)
   
 let update_flow_graph original_flow_graph condition backward_condition increment =
+  let find_reverse_arc graph arc =
+    find_arc graph arc.tgt arc.src
+  in
   e_fold
     original_flow_graph
     (fun acc_graph arc ->
+      Printf.printf "Processing arc: src: %d tgt: %d lbl: %d\n" arc.src arc.tgt arc.lbl;
+      let reverse_arc_opt = find_reverse_arc original_flow_graph arc in
       let modified_arc =
         if condition arc then
-          { arc with lbl = arc.lbl + increment }
+          begin
+            Printf.printf "Updating flow for condition\n";
+            { arc with lbl = arc.lbl + increment }
+          end
         else if backward_condition arc then
-          { arc with lbl = arc.lbl - increment }
+          match reverse_arc_opt with
+          | Some reverse_arc when condition reverse_arc ->
+            Printf.printf "No update for this arc\n";
+            arc
+          | _ ->
+            begin
+              Printf.printf "Updating flow for backward_condition\n";
+              { arc with lbl = arc.lbl - increment }
+            end
         else
-          arc
+          begin
+            Printf.printf "No update for this arc\n";
+            arc
+          end
       in
       new_arc acc_graph modified_arc)
-    original_flow_graph   (* 'b in e_fold is int graph *)
+    original_flow_graph
+
 
 let rec check_if_arc_is_in_path arc path =
   match path with
@@ -49,7 +68,7 @@ let rec check_if_backward_arc_is_in_path arc path =
     else
       check_if_backward_arc_is_in_path arc (node2 :: rest)
 
-let rec find_max_flow_on_path_bleh graph flow_graph path =
+let rec find_max_flow_on_path graph flow_graph path =
   match path with
   | [] -> None
   | _ :: [] -> None 
@@ -73,7 +92,7 @@ let rec find_max_flow_on_path_bleh graph flow_graph path =
     match (arc1_opt, arc2_opt, arc1_rev_opt, arc2_rev_opt) with
     | (Some arc1, Some arc2, None, None) ->
       Printf.printf "Case 1 \n";
-      let rest_difference_opt = find_max_flow_on_path_bleh graph flow_graph (node2 :: rest) in
+      let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
         | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
@@ -81,37 +100,24 @@ let rec find_max_flow_on_path_bleh graph flow_graph path =
       end
     | (None, None, Some _, Some arc2_rev) ->
       Printf.printf "Case 2 \n";
-      let rest_difference_opt = find_max_flow_on_path_bleh graph flow_graph (node2 :: rest) in
+      let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
         | Some rest_difference -> Some (min (arc2_rev.lbl) rest_difference)
         | None -> Some (arc2_rev.lbl) (* we've reached the end *)
       end
-    | (Some arc1, Some arc2, Some _, Some arc2_rev) ->
+    | (Some arc1, Some arc2, Some _, Some _) ->
       Printf.printf "Case 3 \n";
-      let rest_difference_opt = find_max_flow_on_path_bleh graph flow_graph (node2 :: rest) in
+      let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
-        | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl + arc2_rev.lbl) rest_difference)
-        | None -> Some (arc1.lbl - arc2.lbl + arc2_rev.lbl) (* we've reached the end *)
+        | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
+        | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
       end
     | _ -> None
 
   
 
-
-let find_max_flow_on_path graph flow_graph path =
-  let result = find_max_flow_on_path_bleh graph flow_graph path in
-  match result with
-  | Some value -> 
-    Printf.printf "Result: %d\n" value; 
-    let string_flow_graph = gmap flow_graph (fun x -> string_of_int x) in
-    if value = 2 then write_file "res2.txt" string_flow_graph
-    else write_file "resmin2.txt" string_flow_graph;
-    result
-  | None -> 
-    Printf.printf "No result\n"; 
-    result
 
 
 

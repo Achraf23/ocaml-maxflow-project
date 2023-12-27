@@ -47,10 +47,6 @@ let () =
 
   let flow_graph = create_flow_graph graph in
 
-  (*match find_max_flow_on_path graph flow_graph [0; 1; 2] with
-  | Some max_flow -> Printf.printf "Max flow: %d\n" max_flow
-  | None -> Printf.printf "Max flow: 0\n";*)
-
   let flow_graph = run_ford_fulkerson graph flow_graph source target in
 
   Printf.printf "Ford Fulkerson is done\n";
@@ -61,4 +57,3 @@ let () =
   let () = write_file outfile string_flow_graph in
 
   ()
-
