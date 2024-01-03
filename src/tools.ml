@@ -67,23 +67,32 @@ let rec find_max_flow_on_path graph flow_graph path =
       begin
         match rest_difference_opt with
         | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
-        | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
+        | None -> Some (arc1.lbl - arc2.lbl)
       end
     | (None, None, Some _, Some arc2_rev) ->
       let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
-        | Some rest_difference -> Some (min (arc2_rev.lbl) rest_difference)
-        | None -> Some (arc2_rev.lbl) (* we've reached the end *)
+        | Some rest_difference -> Some (min arc2_rev.lbl rest_difference)
+        | None -> Some arc2_rev.lbl
       end
     | (Some arc1, Some arc2, Some _, Some _) ->
       let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
       begin
         match rest_difference_opt with
-        | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
-        | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
+        | Some rest_difference ->
+          if (arc1.lbl - arc2.lbl) > 0 then
+            Some (min (arc1.lbl - arc2.lbl) rest_difference)
+          else
+            Some (min arc1.lbl rest_difference)
+        | None ->
+          if (arc1.lbl - arc2.lbl) > 0 then
+            Some (arc1.lbl - arc2.lbl)
+          else
+            Some arc1.lbl
       end
     | _ -> None
+      
 
   
 
