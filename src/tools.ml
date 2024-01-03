@@ -91,13 +91,6 @@ let rec find_max_flow_on_path graph flow_graph path =
           else
             Some arc1.lbl
       end
-    | (Some arc1, Some arc2, Some _, Some _) ->
-      let rest_difference_opt = find_max_flow_on_path graph flow_graph (node2 :: rest) in
-      begin
-        match rest_difference_opt with
-        | Some rest_difference -> Some (min (arc1.lbl - arc2.lbl) rest_difference)
-        | None -> Some (arc1.lbl - arc2.lbl) (* we've reached the end *)
-      end
     | _ -> None
       
 
