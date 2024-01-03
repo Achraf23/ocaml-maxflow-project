@@ -31,6 +31,11 @@ let () =
   Printf.printf "Source: %d\n" source ;
   Printf.printf "Target: %d\n" target ;
 
+  if source == target then begin
+    Printf.printf "Source and target node are the same. Rerun on a different example.\n";
+    exit 1;
+  end;
+
   (* Open file *)
   let string_graph = from_file infile in
   let graph = gmap string_graph (fun x -> int_of_string x) in

@@ -76,7 +76,8 @@ let rec run_ford_fulkerson graph flow_graph src tgt =
       let new_flow : int = Option.value new_flow_optional ~default:0 in
       Printf.printf "Flow: %d\n" new_flow;
       let updated_flow_graph = update_flow_graph flow_graph (fun arc -> check_if_arc_is_in_path arc path) (fun arc -> check_if_backward_arc_is_in_path arc path) new_flow in
-      run_ford_fulkerson graph updated_flow_graph src tgt
+      run_ford_fulkerson graph updated_flow_graph src tgt 
+
 
   
 
