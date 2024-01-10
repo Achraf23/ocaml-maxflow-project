@@ -11,25 +11,27 @@ let successors n graph =
   let successors = out_arcs graph n in
   List.map (fun arc -> arc.tgt) successors
 
-let rec find_path_aux graph idList src tgt =
+(*idList represents nodes that have been visited*)
+let rec find_path_aux graph idList src tgt = 
   if src = tgt then
     [src]
   else
     let neighbors = successors src graph in
-    let rec loop rest =
-      match rest with
+    let rec loop successors =
+      match successors with
       | [] -> [] (* pas de chemin *)
-      | n1 :: rest' ->
+      | n1 :: restNeighbors ->
         if List.mem n1 idList then
-          loop rest'
+          loop restNeighbors
         else
+          (*Find path for first neighbor*)
           let path = find_path_aux graph (n1 :: idList) n1 tgt in
           Printf.printf "%d : idList= " src; aff idList ;
           Printf.printf "\n";
           match path with
-          | [] -> loop rest'
+          | [] -> loop restNeighbors (*No path so try to find path from other neighbors*)
           | _ ->
-            src :: path
+            src :: path (*Return found path from n1*)
       in
       loop neighbors
   
@@ -69,7 +71,7 @@ let rec run_ford_fulkerson graph flow_graph src tgt =
     write_file "outfileTest" (gmap difference_graph string_of_int);
     let path : int list = find_path difference_graph src tgt in
     match path with
-    | [] -> flow_graph
+    | [] -> flow_graph (*Return last flow graph because can't maximize the flow further*)
     | _ ->
       Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
       let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
