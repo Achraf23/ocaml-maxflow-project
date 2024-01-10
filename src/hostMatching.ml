@@ -181,11 +181,11 @@ let print_hacker_attributes (h: hacker) : unit =
   Printf.printf "----------------------\n"
 
 (* Function to print attributes of a list of hackers *)
-let print_hackers_attributes (hackers: hacker list) : unit =
+let _print_hackers_attributes (hackers: hacker list) : unit =
   List.iter print_hacker_attributes hackers
 
 (* Function to print attributes of a single host *)
-let print_host_attributes (h: host) : unit =
+let _print_host_attributes (h: host) : unit =
   Printf.printf "ID: %d\n" h.id;
   Printf.printf "Guests on Friday: %d\n" h.guests_f;
   Printf.printf "Guests on Saturday: %d\n" h.guests_s;
@@ -195,5 +195,5 @@ let print_host_attributes (h: host) : unit =
   Printf.printf "----------------------\n"
 
 (* Function to print attributes of a list of hosts *)
-let print_hosts_attributes (hosts: host list) : unit =
-  List.iter print_host_attributes hosts
+let _print_hosts_attributes (hosts: host list) : unit =
+  List.iter _print_host_attributes hosts
