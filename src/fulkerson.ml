@@ -1,11 +1,11 @@
 open Graph
 open Tools
-open Gfile
+(* open Gfile *)
 
-let rec aff nodes =
+let rec _aff nodes =
   match nodes with
   | [] -> ()
-  | x::rest -> Printf.printf "%d " x ; aff rest 
+  | x::rest -> Printf.printf "%d " x ; _aff rest 
 
 let successors n graph = 
   let successors = out_arcs graph n in
@@ -26,8 +26,8 @@ let rec find_path_aux graph idList src tgt =
         else
           (*Find path for first neighbor*)
           let path = find_path_aux graph (n1 :: idList) n1 tgt in
-          Printf.printf "%d : idList= " src; aff idList ;
-          Printf.printf "\n";
+          (* Printf.printf "%d : idList= " src; aff idList ; *)
+          (* Printf.printf "\n"; *)
           match path with
           | [] -> loop restNeighbors (*No path so try to find path from other neighbors*)
           | _ ->
@@ -36,7 +36,7 @@ let rec find_path_aux graph idList src tgt =
       loop neighbors
   
 let find_path graph src tgt =
-  Printf.printf "Starting to find path\n";
+  (* Printf.printf "Starting to find path\n"; *)
   find_path_aux graph [src] src tgt 
   
 let build_difference_graph origin_graph flow_graph = 
@@ -63,20 +63,20 @@ let build_difference_graph origin_graph flow_graph =
 exception Difference_graph_error
 
 let rec run_ford_fulkerson graph flow_graph src tgt =
-  Printf.printf "Starting Ford Fulkerson iteration\n"; 
+  (* Printf.printf "Starting Ford Fulkerson iteration\n";  *)
   let difference_graph = build_difference_graph graph flow_graph in
   if difference_graph = empty_graph then
     raise Difference_graph_error
   else
-    write_file "outfileTest" (gmap difference_graph string_of_int);
+    (* write_file "outfileTest" (gmap difference_graph string_of_int); *)
     let path : int list = find_path difference_graph src tgt in
     match path with
     | [] -> flow_graph (*Return last flow graph because can't maximize the flow further*)
     | _ ->
-      Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path));
+      (* Printf.printf "Path: [%s]\n" (String.concat "; " (List.map string_of_int path)); *)
       let new_flow_optional : int option = find_max_flow_on_path graph flow_graph path in
       let new_flow : int = Option.value new_flow_optional ~default:0 in
-      Printf.printf "Flow: %d\n" new_flow;
+      (* Printf.printf "Flow: %d\n" new_flow; *)
       let updated_flow_graph = update_flow_graph flow_graph (fun arc -> check_if_arc_is_in_path arc path) (fun arc -> check_if_backward_arc_is_in_path arc path) new_flow in
       run_ford_fulkerson graph updated_flow_graph src tgt
 

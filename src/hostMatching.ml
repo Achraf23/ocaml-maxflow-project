@@ -1,6 +1,7 @@
 open Graph
 open Fulkerson
 open Tools
+open Printf
 
 type commodities =
   { 
@@ -30,6 +31,7 @@ type host =
   }
 
 exception InvalidInput of string
+
 
 let get_bool (input: string) : bool =
   match input with
@@ -88,10 +90,15 @@ let from_file path =
 
 let is_matching_info host hacker =
   let not_match = 
+    (*hacker doesn't stand animals and host dorm permits animals*)
     (not(hacker.info_hack.animals) && host.info_host.animals) ||
+    (*hacker doesn't stand smoking and smoking is allowed in host's dorm *)
     (not(hacker.info_hack.smoking) && host.info_host.smoking) ||
+    (*both prefer to be paired with same gender but have different genders*)
     (hacker.info_hack.paired_wsame_gender && host.info_host.paired_wsame_gender && hacker.boy!=host.boy) ||
+    (*hacker prefers to be paired with same gender but host is of different gender*)
     (hacker.info_hack.paired_wsame_gender && not(host.info_host.paired_wsame_gender) && hacker.boy!=host.boy) ||
+    (*host prefers to be paired with same gender but hacker is of different gender*)
     (not(hacker.info_hack.paired_wsame_gender) && host.info_host.paired_wsame_gender && hacker.boy!=host.boy)
     
   in if not_match then false else true 
@@ -119,7 +126,7 @@ let init_graph hackers hosts =
 
 (*Returns 0, 1 or 2 depending whether the hacker stays on 
    firday or saturday or both *)
-let get_hosting_days (h: hacker) : int =
+let _get_hosting_days (h: hacker) : int =
   if h.friday && h.saturday then
     2
   else if h.friday || h.saturday then
@@ -134,41 +141,73 @@ let add_matching_arcs graph hackers hosts =
     | host::rest -> 
       let filtered_hackers = List.filter (is_matching_info host) hackers in
       let next_graph = 
-        List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=hacker.id; tgt=host.id; lbl=(get_hosting_days hacker)})
+        List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=hacker.id; tgt=host.id; lbl=1})
       graph filtered_hackers in loop next_graph hackers rest
     | _ -> graph
   in 
     loop graph hackers hosts
 
-let create_bipartite_matching_graph hosts hackers = 
+let create_bipartite_matching_graph hosts hackers friday = 
   (*Create a graph with nodes only*)
   let graph = init_graph hackers hosts in
   (*Add matching arcs between hackers and hosts*)
   let graph2 = add_matching_arcs graph hackers hosts in
   
-  (*Add source node to the graph then link it with the hackers
+  (*step 1: Add source node to the graph then link it with the hackers
     Weight equals the hosting days of the hacker *)
   let graph3 = new_node graph2 0 in 
   let graph4 = 
-    List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=0; tgt = hacker.id; lbl=(get_hosting_days hacker)})
+    List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=0; tgt = hacker.id; lbl=1})
   graph3 hackers in
   
-  (*Add destination node to the graph then link it with the hosts
+  (*step 2: Add destination node to the graph then link it with the hosts
     Weight equals the number of hackers that can be hosted in friday and saturday *)
-  let id_dest_node = (List.length hackers + List.length hosts + 1) in 
+
+  (*ip_dest node represents the destination node with the biggest id in the graph*)
+  let id_dest_node = (List.length hackers + List.length hosts + 1) in  
   let graph5 = new_node graph4 id_dest_node in
-  List.fold_left (fun gr host -> new_arc gr {src=host.id; tgt = id_dest_node; lbl=host.guests_f + host.guests_s})
+  List.fold_left (fun gr host -> new_arc gr {src=host.id; tgt = id_dest_node; lbl= if friday then host.guests_f else host.guests_s})
   graph5 hosts
   
 
-let host_matching hosts hackers =
-  let graph = create_bipartite_matching_graph hosts hackers in 
+let host_matching_graph hosts hackers =
+  let graph = create_bipartite_matching_graph hosts hackers false in 
   let flow_graph = create_flow_graph graph in
   run_ford_fulkerson graph flow_graph 0 (List.length hosts + List.length hackers + 1) 
+  
+let host_matching hosts hackers path = 
+
+  let max_flow = host_matching_graph hosts hackers in
+  
+  (*Retrieve hackers without matching host*)
+  let no_hosting_arcs,hosting_arcs = (List.partition (fun arc -> arc.lbl=0) (out_arcs max_flow 0)) in
+  let no_hosting = List.map (fun arc -> arc.tgt) no_hosting_arcs in
+  let hosted_hackers = List.map (fun arc -> arc.tgt) hosting_arcs in
+
+  (* Open a write-file. *)
+  let ff = open_out path in
+
+  (* Write in this file. *)
+  fprintf ff "%% Result of the host matching.\n\n" ;
+
+  fprintf ff "No hosting for the following hosts:\n" ;
+  
+  List.iter (fun node -> fprintf ff "%d "node) no_hosting ; 
+
+  fprintf ff "\nMatching hosts:\n" ;
+
+  List.iter 
+  (fun hacker -> 
+    let arc = List.hd (List.filter (fun arc -> arc.lbl=1) (out_arcs max_flow hacker)) 
+    in fprintf ff "%d -> %d\n" hacker arc.tgt) hosted_hackers;
+  
+  close_out ff 
 
 
 
-(***** FOR DEBUGGING *****)
+
+
+(***** FOR DEBUGGING *****) 
 
 (* Function to print attributes of a single hacker *)
 let print_hacker_attributes (h: hacker) : unit =

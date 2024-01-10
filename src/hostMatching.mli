@@ -30,4 +30,6 @@ type host =
 
 val from_file : string -> host list * hacker list 
 
-val host_matching : host list -> hacker list -> id graph
+val host_matching_graph : host list -> hacker list -> id graph
+
+val host_matching : host list -> hacker list -> string -> unit
