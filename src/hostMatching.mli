@@ -24,11 +24,12 @@ type host =
     guests_f : int ;
     guests_s : int ;
     boy : bool ;
-    info_host : commodities
+    info_host : commodities;
+    distance : int
   }
 
 
-val from_file : string -> host list * hacker list 
+val from_data_file : string -> host list * hacker list 
 
 val host_matching_graph : host list -> hacker list -> id graph
 

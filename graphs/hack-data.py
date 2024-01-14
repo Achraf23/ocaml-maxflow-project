@@ -8,8 +8,7 @@ def generate_data():
     num_hackers = 0
     num_hosts = 0
 
-    # Generate between 15 and 20 lines
-    num_lines = random.randint(80, 100)
+    num_lines = random.randint(9, 10)
 
     for i in range(1, num_lines + 1):
         # Randomly choose between hacker and host based on the specified probabilities
@@ -35,7 +34,8 @@ def generate_data():
             host_first = str(random.randint(1, 5))
             host_second = str(random.randint(1, 5))
             host_rest = ["yes" if random.random() < 0.5 else "no"] + ["yes" if random.random() < 0.6 else "no" for _ in range(3)]
-            data.append(f"{i}: host: {host_first}, {host_second}, {', '.join(host_rest)}")
+            host_last = str(random.randint(1, 100))
+            data.append(f"{i}: host: {host_first}, {host_second}, {', '.join(host_rest)},{host_last}")
 
     # Append the count of hackers and hosts at the end of the data list
     data.append(f"\nNumber of Hackers: {num_hackers}\nNumber of Hosts: {num_hosts}")

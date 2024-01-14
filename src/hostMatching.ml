@@ -1,6 +1,5 @@
 open Graph
 open Fulkerson
-open Tools
 open Printf
 
 type commodities =
@@ -27,7 +26,8 @@ type host =
     guests_f : int ;
     guests_s : int ;
     boy : bool ;
-    info_host : commodities
+    info_host : commodities ;
+    distance : int
   }
 
 exception InvalidInput of string
@@ -46,7 +46,8 @@ let create_host n arg =
     guests_s = int_of_string (List.nth arg 1);
     boy= get_bool (List.nth arg 2);
     info_host = {animals = get_bool (List.nth arg 3); 
-    smoking = get_bool (List.nth arg 4); paired_wsame_gender = get_bool (List.nth arg 5)}} 
+    smoking = get_bool (List.nth arg 4); paired_wsame_gender = get_bool (List.nth arg 5)};
+    distance = int_of_string (List.nth arg 6)} 
   in host
 
 let create_hacker n arg = 
@@ -59,7 +60,7 @@ let create_hacker n arg =
     smoking = get_bool (List.nth arg 4); paired_wsame_gender = get_bool (List.nth arg 5)}} 
   in hacker
 
-let from_file path =
+let from_data_file path =
 
   let infile = open_in path in
 
@@ -134,46 +135,46 @@ let _get_hosting_days (h: hacker) : int =
   else
     0
 
-let add_matching_arcs graph hackers hosts = 
+let add_matching_arcs graph hackers hosts capacity_cost= 
 
   let rec loop graph hackers hosts =
     match hosts with
     | host::rest -> 
       let filtered_hackers = List.filter (is_matching_info host) hackers in
       let next_graph = 
-        List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=hacker.id; tgt=host.id; lbl=1})
+        List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=hacker.id; tgt=host.id; lbl=capacity_cost})
       graph filtered_hackers in loop next_graph hackers rest
     | _ -> graph
   in 
     loop graph hackers hosts
 
-let create_bipartite_matching_graph hosts hackers friday = 
+let create_bipartite_matching_graph hosts hackers src sink = 
   (*Create a graph with nodes only*)
   let graph = init_graph hackers hosts in
   (*Add matching arcs between hackers and hosts*)
-  let graph2 = add_matching_arcs graph hackers hosts in
+  let graph2 = add_matching_arcs graph hackers hosts (1,0) in
   
   (*step 1: Add source node to the graph then link it with the hackers
     Weight equals the hosting days of the hacker *)
   let graph3 = new_node graph2 0 in 
   let graph4 = 
-    List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=0; tgt = hacker.id; lbl=1})
+    List.fold_left (fun gr (hacker:hacker) -> new_arc gr {src=src; tgt = hacker.id; lbl=(1,0)})
   graph3 hackers in
   
   (*step 2: Add destination node to the graph then link it with the hosts
     Weight equals the number of hackers that can be hosted in friday and saturday *)
 
   (*ip_dest node represents the destination node with the biggest id in the graph*)
-  let id_dest_node = (List.length hackers + List.length hosts + 1) in  
-  let graph5 = new_node graph4 id_dest_node in
-  List.fold_left (fun gr host -> new_arc gr {src=host.id; tgt = id_dest_node; lbl= if friday then host.guests_f else host.guests_s})
+    
+  let graph5 = new_node graph4 sink in
+  List.fold_left (fun gr host -> new_arc gr {src=host.id; tgt = sink; lbl= (host.guests_f,host.distance) })
   graph5 hosts
   
 
 let host_matching_graph hosts hackers =
-  let graph = create_bipartite_matching_graph hosts hackers false in 
-  let flow_graph = create_flow_graph graph in
-  run_ford_fulkerson graph flow_graph 0 (List.length hosts + List.length hackers + 1) 
+  let sink = (List.length hackers + List.length hosts + 1) in
+  let graph = create_bipartite_matching_graph hosts hackers 0 sink in 
+  max_flow_min_cost graph 0 sink
   
 let host_matching hosts hackers path = 
 
