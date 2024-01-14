@@ -1,7 +1,9 @@
-open Gfile
-open Tools
-open Fulkerson
-open Graph
+ (* open Gfile *)
+(* open Tools *)
+(*open Fulkerson*)
+(* open Graph  *)
+open HostMatching
+(* open BellmanFord *)
     
 let () =
 
@@ -20,40 +22,33 @@ let () =
 
   (* Arguments are : infile(1) source-id(2) sink-id(3) outfile(4) *)
   
-  let infile = Sys.argv.(1)
-  and outfile = Sys.argv.(4)
+  let infile = Sys.argv.(1) in
+  (* and outfile = Sys.argv.(4) in *)
   
   (* These command-line arguments are not used for the moment. *)
-  and source = int_of_string Sys.argv.(2)
+  (* and source = int_of_string Sys.argv.(2)
   and target = int_of_string Sys.argv.(3)
   in
 
   Printf.printf "Source: %d\n" source ;
-  Printf.printf "Target: %d\n" target ;
+  Printf.printf "Target: %d\n" target ; *)
 
   (* Open file *)
-  let string_graph = from_file infile in
-  let graph = gmap string_graph (fun x -> int_of_string x) in
+  (*HACKER TESTS*)
+  let hosts,hackers = from_data_file infile in
+  host_matching hosts hackers "test" 
+  
+  (* write_file outfile (gmap matching string_of_int)  *)
 
-  if not (node_exists graph source) then begin
-    Printf.printf "Error: Source node %d does not exist in the graph.\n" source;
-    exit 1;
-  end;
 
-  if not (node_exists graph target) then begin
-    Printf.printf "Error: Target node %d does not exist in the graph.\n" target;
-    exit 1;
-  end;
+  
+  (*BELLMAN FORD TESTS*)
+  (* let rec aff nodes =
+    Printf.printf "printed nodes:\n" ;
+    match nodes with
+    | [] -> ()
+    | x::rest -> Printf.printf "%d " x ; aff rest in
 
-  let flow_graph = create_flow_graph graph in
-
-  let flow_graph = run_ford_fulkerson graph flow_graph source target in
-
-  Printf.printf "Ford Fulkerson is done\n";
-
-  let string_flow_graph = gmap flow_graph (fun x -> string_of_int x) in
-
-  (* Rewrite the graph that has been read. *)
-  let () = write_file outfile string_flow_graph in
-
-  ()
+  let graph = from_file infile in
+  let float_graph = gmap graph float_of_string in 
+  aff (find_shortest_path float_graph 0 5) *)

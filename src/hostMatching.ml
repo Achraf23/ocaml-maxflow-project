@@ -191,7 +191,7 @@ let host_matching hosts hackers path =
   (* Write in this file. *)
   fprintf ff "%% Result of the host matching.\n\n" ;
 
-  fprintf ff "No hosting for the following hosts:\n" ;
+  fprintf ff "No hosting for the following hackers:\n" ;
   
   List.iter (fun node -> fprintf ff "%d "node) no_hosting ; 
 
